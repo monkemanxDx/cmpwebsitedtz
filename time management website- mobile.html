@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Student Planner - Mobile</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #2d3748;
+      overflow-x: hidden;
+      font-size: 16px;
+      line-height: 1.5;
+      padding-bottom: 80px; /* Space for bottom nav */
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 8px 0;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 12px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      font-size: 11px;
+      font-weight: 500;
+      color: #6b7280;
+      text-decoration: none;
+      min-width: 60px;
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .nav-icon {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 4px;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    /* SVG Icons for navigation */
+    .nav-item[data-page="calendar"] .nav-icon {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'/%3E%3C/svg%3E");
+    }
+
+    .nav-item[data-page="weekly"] .nav-icon {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'/%3E%3C/svg%3E");
+    }
+
+    .nav-item[data-page="organisation"] .nav-icon {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4'/%3E%3C/svg%3E");
+    }
+
+    .nav-item[data-page="notes"] .nav-icon {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'/%3E%3C/svg%3E");
+    }
+
+    .nav-item[data-page="settings"] .nav-icon {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z'/%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'/%3E%3C/svg%3E");
+    }
+
+    .page {
+      display: none;
+      padding: 20px 16px;
+      animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .active {
+      display: block;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 20px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-align: center;
+    }
+
+    /* Calendar Styles */
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-controls button {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      font-size: 14px;
+      min-width: 44px;
+      min-height: 44px;
+    }
+
+    #monthYearLabel {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2d3748;
+      flex: 1;
+      text-align: center;
+    }
+
+    .calendar {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 2px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .calendar td,
+    .calendar th {
+      border: none;
+      padding: 8px 4px;
+      text-align: center;
+      vertical-align: top;
+      background: white;
+      min-height: 60px;
+    }
+
+    .calendar th {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 12px 4px;
+    }
+
+    .calendar td {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .calendar td:hover {
+      background: rgba(102, 126, 234, 0.05);
+    }
+
+    .today {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15)) !important;
+      border: 2px solid #667eea !important;
+      border-radius: 8px;
+    }
+
+    .calendar textarea {
+      width: 100%;
+      height: 40px;
+      margin-top: 4px;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 4px;
+      font-family: inherit;
+      font-size: 0.75rem;
+      resize: vertical;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Weekly Timetable Styles */
+    .task-controls {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .task-controls > * {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    .task-controls button {
+      margin-bottom: 0;
+    }
+
+    .timetable-container {
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+
+    .timetable {
+      width: 100%;
+      min-width: 700px;
+      border-collapse: separate;
+      border-spacing: 2px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+    }
+
+    .timetable th,
+    .timetable td {
+      border: none;
+      padding: 12px 8px;
+      vertical-align: top;
+      background: white;
+      min-height: 100px;
+      min-width: 100px;
+    }
+
+    .timetable th {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .timetable td div {
+      background: rgba(102, 126, 234, 0.1);
+      padding: 6px;
+      margin-bottom: 6px;
+      border-radius: 6px;
+      border-left: 3px solid #667eea;
+      font-size: 0.75rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 4px;
+      line-height: 1.3;
+    }
+
+    /* Organisation Styles */
+    .date-display {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 16px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: 500;
+      color: #4a5568;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .add-item-section {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .add-item-section input {
+      flex: 1;
+    }
+
+    .org-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+      margin-bottom: 20px;
+      list-style: none;
+    }
+
+    .org-grid li {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.95rem;
+      min-height: 60px;
+    }
+
+    #taskList li.completed,
+    #orgList li.completed {
+      text-decoration: line-through;
+      color: #a0aec0;
+      opacity: 0.7;
+    }
+
+    .money-box {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      margin-top: 20px;
+    }
+
+    .money-box h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .money-box label {
+      display: block;
+      margin-bottom: 16px;
+      font-weight: 500;
+      color: #4a5568;
+    }
+
+    .money-box input {
+      width: 120px;
+      margin-left: 8px;
+      padding: 12px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 16px; /* Prevent zoom on iOS */
+    }
+
+    .money-warning {
+      color: #e53e3e;
+      font-weight: 600;
+      padding: 12px;
+      background: rgba(229, 62, 62, 0.1);
+      border-radius: 8px;
+      border-left: 4px solid #e53e3e;
+      margin-top: 12px;
+    }
+
+    /* Notes Styles */
+    .notes-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .notes-controls label {
+      font-weight: 500;
+      color: #4a5568;
+      margin-bottom: 8px;
+    }
+
+    .notes-controls select {
+      width: 100%;
+      margin-bottom: 12px;
+    }
+
+    #subjectNotes {
+      width: 100%;
+      min-height: 300px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 20px;
+      font-family: inherit;
+      font-size: 16px; /* Prevent zoom on iOS */
+      line-height: 1.6;
+      resize: vertical;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Settings Styles */
+    .settings-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .settings-item {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .settings-item label {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 500;
+      color: #4a5568;
+    }
+
+    /* Form Controls */
+    input, select, textarea, button {
+      font-family: inherit;
+      font-size: 16px; /* Prevent zoom on iOS */
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+    }
+
+    input[type="text"], input[type="time"], input[type="number"], input[type="color"], select, textarea {
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      background: white;
+      min-height: 44px;
+      transition: all 0.3s ease;
+    }
+
+    input[type="text"]:focus, input[type="time"]:focus, input[type="number"]:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    button {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 44px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    /* Checkboxes */
+    input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      accent-color: #667eea;
+      cursor: pointer;
+    }
+
+    /* Save status */
+    #saveStatus {
+      background: rgba(72, 187, 120, 0.1);
+      color: #2f855a;
+      padding: 12px;
+      border-radius: 8px;
+      border-left: 4px solid #48bb78;
+      margin-top: 12px;
+      font-weight: 500;
+    }
+
+    /* Money status */
+    #moneyStatus p {
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 12px;
+      font-weight: 500;
+    }
+
+    #moneyStatus p:not(.money-warning) {
+      background: rgba(72, 187, 120, 0.1);
+      color: #2f855a;
+      border-left: 4px solid #48bb78;
+    }
+
+    footer {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin-top: 40px;
+      font-weight: 500;
+    }
+
+    /* Loading state */
+    .loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 200px;
+      font-size: 1.1rem;
+      color: #6b7280;
+    }
+
+    /* Touch improvements */
+    .calendar td, .timetable td, .org-grid li, button, .nav-item {
+      -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
+    }
+
+    /* Safe area for notched devices */
+    @supports(padding: max(0px)) {
+      .bottom-nav {
+        padding-bottom: max(8px, env(safe-area-inset-bottom));
+      }
+      
+      body {
+        padding-bottom: max(80px, calc(80px + env(safe-area-inset-bottom)));
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <a href="#" class="nav-item active" data-page="calendar" onclick="showPage('calendar')">
+      <div class="nav-icon"></div>
+      <span>Calendar</span>
+    </a>
+    <a href="#" class="nav-item" data-page="weekly" onclick="showPage('weekly')">
+      <div class="nav-icon"></div>
+      <span>Timetable</span>
+    </a>
+    <a href="#" class="nav-item" data-page="organisation" onclick="showPage('organisation')">
+      <div class="nav-icon"></div>
+      <span>Tasks</span>
+    </a>
+    <a href="#" class="nav-item" data-page="notes" onclick="showPage('notes')">
+      <div class="nav-icon"></div>
+      <span>Notes</span>
+    </a>
+    <a href="#" class="nav-item" data-page="settings" onclick="showPage('settings')">
+      <div class="nav-icon"></div>
+      <span>Settings</span>
+    </a>
+  </nav>
+
+  <!-- Calendar Page -->
+  <div id="calendar" class="page active">
+    <h2>Monthly Calendar</h2>
+    <div class="nav-controls">
+      <button onclick="changeMonth(-1)">←</button>
+      <span id="monthYearLabel"></span>
+      <button onclick="changeMonth(1)">→</button>
+    </div>
+    <table class="calendar" id="monthCalendar"></table>
+  </div>
+
+  <!-- Weekly Timetable Page -->
+  <div id="weekly" class="page">
+    <h2>Weekly Timetable</h2>
+    <div class="task-controls">
+      <select id="taskDay">
+        <option value="0">Monday</option>
+        <option value="1">Tuesday</option>
+        <option value="2">Wednesday</option>
+        <option value="3">Thursday</option>
+        <option value="4">Friday</option>
+        <option value="5">Saturday</option>
+        <option value="6">Sunday</option>
+      </select>
+      <input type="time" id="taskTime" step="60">
+      <input type="text" id="taskNote" placeholder="Task description...">
+      <select id="taskSubject">
+        <option value="">No Subject</option>
+        <option>Math</option>
+        <option>English</option>
+        <option>Science</option>
+        <option>INS</option>
+        <option>PHE</option>
+        <option>Design</option>
+        <option>Music</option>
+        <option>Visual Arts</option>
+        <option>Languages</option>
+        <option>CCAs</option>
+        <option>Sports</option>
+        <option>Other</option>
+      </select>
+      <button onclick="addWeeklyTask()">Add Task</button>
+    </div>
+    <div class="timetable-container">
+      <table class="timetable" id="weeklyTimetable">
+        <thead>
+          <tr>
+            <th>Mon</th>
+            <th>Tue</th>
+            <th>Wed</th>
+            <th>Thu</th>
+            <th>Fri</th>
+            <th>Sat</th>
+            <th>Sun</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td id="day0"></td>
+            <td id="day1"></td>
+            <td id="day2"></td>
+            <td id="day3"></td>
+            <td id="day4"></td>
+            <td id="day5"></td>
+            <td id="day6"></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Organisation Page -->
+  <div id="organisation" class="page">
+    <h2>Organisation - Tasks</h2>
+    <div class="date-display">Today's Date: <span id="todayDate"></span></div>
+    <div class="add-item-section">
+      <input type="text" id="orgItem" placeholder="Add a new item..." />
+      <button onclick="addOrgItem()">Add</button>
+    </div>
+    <ul id="orgList" class="org-grid"></ul>
+    <div class="money-box">
+      <h3>Money Tracker</h3>
+      <label>Total Needed: $<input type="number" id="moneyNeeded" value="0"></label>
+      <label>Current Amount: $<input type="number" id="moneyHave" value="0"></label>
+      <button onclick="updateMoneyStatus()">Update Status</button>
+      <div id="moneyStatus"></div>
+    </div>
+  </div>
+
+  <!-- Notes Page -->
+  <div id="notes" class="page">
+    <h2>Study Notes</h2>
+    <div class="notes-controls">
+      <label for="notesSubject">Select Subject:</label>
+      <select id="notesSubject" onchange="loadNotes()">
+        <option value="Math">Math</option>
+        <option value="English">English</option>
+        <option value="Science">Science</option>
+        <option value="INS">INS</option>
+        <option value="PHE">PHE</option>
+        <option value="Design">Design</option>
+        <option value="Music">Music</option>
+        <option value="Visual Arts">Visual Arts</option>
+        <option value="Languages">Languages</option>
+        <option value="CCAs">CCAs</option>
+        <option value="Sports">Sports</option>
+        <option value="Other">Other</option>
+      </select>
+      <button onclick="saveNotes()">Save Notes</button>
+    </div>
+    <textarea id="subjectNotes" placeholder="Write your study notes here..."></textarea>
+    <p id="saveStatus" style="display: none;">Notes saved successfully!</p>
+  </div>
+
+  <!-- Settings Page -->
+  <div id="settings" class="page">
+    <h2>Settings</h2>
+    <div class="settings-grid">
+      <div class="settings-item">
+        <label>Background Color: <input type="color" id="bgColorPicker" /></label>
+      </div>
+      <div class="settings-item">
+        <label>Text Color: <input type="color" id="textColorPicker" /></label>
+      </div>
+      <div class="settings-item">
+        <label>Font Size: <input type="number" id="fontSize" min="14" max="24" value="16" /> px</label>
+      </div>
+      <div class="settings-item">
+        <label><input type="checkbox" id="toggleCalendar" checked onchange="toggleSection('calendar')" /> Show Calendar</label>
+      </div>
+      <div class="settings-item">
+        <label><input type="checkbox" id="toggleWeekly" checked onchange="toggleSection('weekly')" /> Show Timetable</label>
+      </div>
+      <div class="settings-item">
+        <label><input type="checkbox" id="toggleOrganisation" checked onchange="toggleSection('organisation')" /> Show Tasks</label>
+      </div>
+    </div>
+    <button onclick="applySettings()">Apply All Settings</button>
+  </div>
+
+  <footer>
+    Made by Daaruk and co
+  </footer>
+
+  <script>
+    // Prevent zoom on double tap
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function (event) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+
+    document.getElementById("todayDate").textContent = new Date().toLocaleDateString();
+
+    // ========== NAVIGATION ==========
+    function showPage(pageId) {
+      // Hide all pages
+      document.querySelectorAll('.page').forEach(page => {
+        page.classList.remove('active');
+      });
+      // Show selected page
+      document.getElementById(pageId).classList.add('active');
+      
+      // Update navigation
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      document.querySelector(`.nav-item[data-page="${pageId}"]`).classList.add('active');
+    }
+
+    // ========== ORGANISATION ==========
+    function saveOrgList() {
+      const orgListItems = [];
+      document.querySelectorAll("#orgList li").forEach(li => {
+        orgListItems.push({
+          text: li.textContent.trim(),
+          completed: li.classList.contains("completed")
+        });
+      });
+      localStorage.setItem("orgList", JSON.stringify(orgListItems));
+    }
+
+    function loadOrgList() {
+      const orgListStr = localStorage.getItem("orgList");
+      if (orgListStr) {
+        const orgListItems = JSON.parse(orgListStr);
+        const ul = document.getElementById("orgList");
+        ul.innerHTML = "";
+        orgListItems.forEach(item => {
+          const li = document.createElement("li");
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = item.completed;
+          if (item.completed) li.classList.add("completed");
+          checkbox.onchange = () => {
+            li.classList.toggle("completed", checkbox.checked);
+            saveOrgList();
+          };
+          li.appendChild(document.createTextNode(" " + item.text));
+          li.prepend(checkbox);
+          ul.appendChild(li);
+        });
+      }
+    }
+
+    function addOrgItem() {
+      const val = document.getElementById("orgItem").value;
+      if (!val) return;
+      const li = document.createElement("li");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.onchange = () => {
+        li.classList.toggle("completed", checkbox.checked);
+        saveOrgList();
+      };
+      li.appendChild(document.createTextNode(" " + val));
+      li.prepend(checkbox);
+      document.getElementById("orgList").appendChild(li);
+      document.getElementById("orgItem").value = "";
+      saveOrgList();
+    }
+
+    // ========== MONEY TRACKER ==========
+    function updateMoneyStatus() {
+      const neededInput = document.getElementById("moneyNeeded");
+      const haveInput = document.getElementById("moneyHave");
+      const needed = parseFloat(neededInput.value) || 0;
+      const have = parseFloat(haveInput.value) || 0;
+      const diff = needed - have;
+      const status = document.getElementById("moneyStatus");
+      if (diff > 0) {
+        status.innerHTML = `<p class='money-warning'>You are missing ${diff.toFixed(2)}</p>`;
+      } else {
+        status.innerHTML = `<p>You have all the money you need!</p>`;
+      }
+      // Save money values
+      localStorage.setItem("moneyNeeded", needed);
+      localStorage.setItem("moneyHave", have);
+    }
+
+    function loadMoneyStatus() {
+      const needed = localStorage.getItem("moneyNeeded");
+      const have = localStorage.getItem("moneyHave");
+      if (needed !== null) document.getElementById("moneyNeeded").value = needed;
+      if (have !== null) document.getElementById("moneyHave").value = have;
+      updateMoneyStatus();
+    }
+
+    // ========== WEEKLY TIMETABLE ==========
+    function saveWeeklyTasks() {
+      const tasks = {};
+      for (let i = 0; i <= 6; i++) {
+        const dayCell = document.getElementById("day" + i);
+        const dayTasks = [];
+        dayCell.querySelectorAll("div").forEach(taskDiv => {
+          const checkbox = taskDiv.querySelector("input[type=checkbox]");
+          const time = taskDiv.getAttribute("data-time");
+          // Extract innerHTML excluding checkbox
+          const text = taskDiv.textContent.trim();
+          dayTasks.push({
+            time: time,
+            text: text,
+            completed: checkbox.checked
+          });
+        });
+        tasks[i] = dayTasks;
+      }
+      localStorage.setItem("weeklyTasks", JSON.stringify(tasks));
+    }
+
+    function loadWeeklyTasks() {
+      const tasksStr = localStorage.getItem("weeklyTasks");
+      if (!tasksStr) return;
+      const tasks = JSON.parse(tasksStr);
+      for (let i = 0; i <= 6; i++) {
+        const dayCell = document.getElementById("day" + i);
+        dayCell.innerHTML = "";
+        if (!tasks[i]) continue;
+        // Recreate tasks sorted by time
+        const sortedTasks = tasks[i].sort((a, b) => a.time.localeCompare(b.time));
+        sortedTasks.forEach(task => {
+          const taskDiv = document.createElement("div");
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.checked = task.completed;
+          checkbox.onchange = saveWeeklyTasks;
+          taskDiv.appendChild(checkbox);
+          taskDiv.appendChild(document.createTextNode(" " + task.text));
+          taskDiv.setAttribute("data-time", task.time);
+          dayCell.appendChild(taskDiv);
+        });
+      }
+    }
+
+    function addWeeklyTask() {
+      const dayIndex = parseInt(document.getElementById("taskDay").value);
+      const time = document.getElementById("taskTime").value;
+      const note = document.getElementById("taskNote").value;
+      const subject = document.getElementById("taskSubject").value;
+
+      if (!time || !note) return;
+
+      const task = document.createElement("div");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.onchange = saveWeeklyTasks;
+      task.appendChild(checkbox);
+      task.innerHTML += ` <strong>${time}</strong> - ${subject ? "[" + subject + "] " : ""}${note}`;
+      task.setAttribute("data-time", time);
+
+      const dayCell = document.getElementById("day" + dayIndex);
+      const tasks = Array.from(dayCell.children);
+      tasks.push(task);
+      tasks.sort((a, b) => a.getAttribute("data-time").localeCompare(b.getAttribute("data-time")));
+
+      dayCell.innerHTML = "";
+      tasks.forEach(t => dayCell.appendChild(t));
+
+      document.getElementById("taskTime").value = "";
+      document.getElementById("taskNote").value = "";
+      document.getElementById("taskSubject").value = "";
+
+      saveWeeklyTasks();
+    }
+
+    // ========== CALENDAR ==========
+    const monthCalendar = document.getElementById("monthCalendar");
+    const monthYearLabel = document.getElementById("monthYearLabel");
+
+    let currentDate = new Date();
+
+    // Save current month/year to localStorage
+    function saveCurrentMonthYear() {
+      localStorage.setItem("calendarYear", currentDate.getFullYear());
+      localStorage.setItem("calendarMonth", currentDate.getMonth());
+    }
+
+    // Load current month/year from localStorage
+    function loadCurrentMonthYear() {
+      const y = localStorage.getItem("calendarYear");
+      const m = localStorage.getItem("calendarMonth");
+      if (y !== null && m !== null) {
+        currentDate = new Date(parseInt(y), parseInt(m), 1);
+      }
+    }
+
+    function changeMonth(offset) {
+      currentDate.setMonth(currentDate.getMonth() + offset);
+      renderCalendar();
+      saveCurrentMonthYear();
+    }
+
+    function saveCalendarNotes(year, month, day, note) {
+      const key = `calendarNote_${year}_${month}_${day}`;
+      localStorage.setItem(key, note);
+    }
+
+    function loadCalendarNote(year, month, day) {
+      const key = `calendarNote_${year}_${month}_${day}`;
+      return localStorage.getItem(key) || "";
+    }
+
+    function renderCalendar() {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDay = firstDay.getDay();
+      const daysInMonth = lastDay.getDate();
+
+      monthYearLabel.textContent = `${currentDate.toLocaleString('default', { month: 'long' })} ${year}`;
+
+      let html = "<tr>";
+      const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      for (let i = 0; i < 7; i++) {
+        html += `<th>${weekdays[i]}</th>`;
+      }
+      html += "</tr><tr>";
+
+      let dayCount = 0;
+
+      for (let i = 0; i < startDay; i++) {
+        html += "<td></td>";
+        dayCount++;
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        if (dayCount % 7 === 0 && day !== 1) {
+          html += "</tr><tr>";
+        }
+
+        const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+        const savedNote = loadCalendarNote(year, month, day);
+
+        html += `<td class="${isToday ? "today" : ""}"><strong>${day}</strong><br/>` +
+          `<textarea placeholder="Notes..." data-year="${year}" data-month="${month}" data-day="${day}">${savedNote}</textarea></td>`;
+        dayCount++;
+      }
+
+      while (dayCount % 7 !== 0) {
+        html += "<td></td>";
+        dayCount++;
+      }
+
+      html += "</tr>";
+      monthCalendar.innerHTML = html;
+
+      // Add event listeners for textareas to save notes on input
+      monthCalendar.querySelectorAll("textarea").forEach(textarea => {
+        textarea.addEventListener("input", e => {
+          const y = textarea.getAttribute("data-year");
+          const m = textarea.getAttribute("data-month");
+          const d = textarea.getAttribute("data-day");
+          saveCalendarNotes(y, m, d, textarea.value);
+        });
+      });
+    }
+
+    // ========== NOTES ==========
+    function loadNotes() {
+      const subject = document.getElementById("notesSubject").value;
+      const notes = localStorage.getItem("notes_" + subject) || "";
+      document.getElementById("subjectNotes").value = notes;
+      document.getElementById("saveStatus").style.display = "none";
+    }
+
+    function saveNotes() {
+      const subject = document.getElementById("notesSubject").value;
+      const notes = document.getElementById("subjectNotes").value;
+      localStorage.setItem("notes_" + subject, notes);
+      const status = document.getElementById("saveStatus");
+      status.style.display = "block";
+      setTimeout(() => {
+        status.style.display = "none";
+      }, 2000);
+    }
+
+    // ========== SETTINGS ==========
+    function saveSettings() {
+      const bgColor = document.getElementById("bgColorPicker").value;
+      const textColor = document.getElementById("textColorPicker").value;
+      const fontSize = document.getElementById("fontSize").value;
+      const toggleCalendar = document.getElementById("toggleCalendar").checked;
+      const toggleWeekly = document.getElementById("toggleWeekly").checked;
+      const toggleOrganisation = document.getElementById("toggleOrganisation").checked;
+
+      localStorage.setItem("setting_bgColor", bgColor);
+      localStorage.setItem("setting_textColor", textColor);
+      localStorage.setItem("setting_fontSize", fontSize);
+      localStorage.setItem("setting_toggleCalendar", toggleCalendar);
+      localStorage.setItem("setting_toggleWeekly", toggleWeekly);
+      localStorage.setItem("setting_toggleOrganisation", toggleOrganisation);
+    }
+
+    function loadSettings() {
+      const bgColor = localStorage.getItem("setting_bgColor");
+      const textColor = localStorage.getItem("setting_textColor");
+      const fontSize = localStorage.getItem("setting_fontSize");
+      const toggleCalendar = localStorage.getItem("setting_toggleCalendar");
+      const toggleWeekly = localStorage.getItem("setting_toggleWeekly");
+      const toggleOrganisation = localStorage.getItem("setting_toggleOrganisation");
+
+      if (bgColor) document.getElementById("bgColorPicker").value = bgColor;
+      if (textColor) document.getElementById("textColorPicker").value = textColor;
+      if (fontSize) document.getElementById("fontSize").value = fontSize;
+      if (toggleCalendar !== null) {
+        const val = (toggleCalendar === "true");
+        document.getElementById("toggleCalendar").checked = val;
+        toggleSection("calendar");
+      }
+      if (toggleWeekly !== null) {
+        const val = (toggleWeekly === "true");
+        document.getElementById("toggleWeekly").checked = val;
+        toggleSection("weekly");
+      }
+      if (toggleOrganisation !== null) {
+        const val = (toggleOrganisation === "true");
+        document.getElementById("toggleOrganisation").checked = val;
+        toggleSection("organisation");
+      }
+
+      applySettings();
+    }
+
+    function applySettings() {
+      const bgColor = document.getElementById("bgColorPicker").value;
+      const textColor = document.getElementById("textColorPicker").value;
+      const fontSize = document.getElementById("fontSize").value;
+
+      if (bgColor) {
+        document.body.style.background = bgColor;
+      }
+      if (textColor) {
+        document.body.style.color = textColor;
+      }
+      if (fontSize) {
+        document.body.style.fontSize = fontSize + "px";
+      }
+    }
+
+    function toggleSection(sectionName) {
+      const checkbox = document.getElementById("toggle" + sectionName.charAt(0).toUpperCase() + sectionName.slice(1));
+      const navLink = document.querySelector(`.nav-item[data-page="${sectionName}"]`);
+      
+      if (checkbox.checked) {
+        navLink.style.display = "flex";
+      } else {
+        navLink.style.display = "none";
+      }
+    }
+
+    // ========== INITIAL LOAD ==========
+    loadCurrentMonthYear();
+    renderCalendar();
+    loadOrgList();
+    loadMoneyStatus();
+    loadWeeklyTasks();
+    loadSettings();
+    loadNotes(); // for default subject
+
+    // ========== EVENT LISTENERS ==========
+    // Save money on input change
+    document.getElementById("moneyNeeded").addEventListener("input", updateMoneyStatus);
+    document.getElementById("moneyHave").addEventListener("input", updateMoneyStatus);
+
+    // Load notes on subject change
+    document.getElementById("notesSubject").addEventListener("change", loadNotes);
+
+    // Save settings when apply button is clicked
+    document.querySelector("button[onclick='applySettings()']").addEventListener("click", () => {
+      applySettings();
+      saveSettings();
+    });
+
+    // Add enter key support for adding items
+    document.getElementById("orgItem").addEventListener("keypress", (e) => {
+      if (e.key === 'Enter') {
+        addOrgItem();
+      }
+    });
+
+    // Mobile-specific touch handlers
+    let touchStartY = 0;
+    let touchEndY = 0;
+
+    // Prevent overscroll bounce on iOS
+    document.body.addEventListener('touchstart', e => {
+      if (e.target === document.body) {
+        e.preventDefault();
+      }
+    });
+
+    document.body.addEventListener('touchend', e => {
+      if (e.target === document.body) {
+        e.preventDefault();
+      }
+    });
+
+    // Handle swipe gestures for navigation
+    document.addEventListener('touchstart', e => {
+      touchStartY = e.changedTouches[0].screenY;
+    });
+
+    document.addEventListener('touchend', e => {
+      touchEndY = e.changedTouches[0].screenY;
+      handleSwipe();
+    });
+
+    function handleSwipe() {
+      const swipeThreshold = 50;
+      const diff = touchStartY - touchEndY;
+      
+      if (Math.abs(diff) > swipeThreshold) {
+        // Vertical swipe detected - could implement page switching here if desired
+        // For now, just prevent default browser behavior
+      }
+    }
+  </script>
+</body>
+
+</html>
